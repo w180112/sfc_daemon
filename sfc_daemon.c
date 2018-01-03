@@ -267,7 +267,7 @@ int send_sfc_list(sfc_t* node, int total_sfc)
 	   new_sfc_list[i].sa_ip = cur->sa_ip;
         memcpy(new_sfc_list[i].sa_mac,cur->sa_mac,sizeof(new_sfc_list[i].sa_mac));
         new_sfc_list[i].total_sfc = total_sfc;
-	   syslog(LOG_NOTICE,"next vf = %d next ip = %s",new_sfc_list[i].vf, new_sfc_list[i].ip);
+	   //syslog(LOG_NOTICE,"next vf = %d next ip = %s",new_sfc_list[i].vf, new_sfc_list[i].ip);
 	   i++;
     }
     if ((sock = socket(AF_INET,SOCK_STREAM,0)) == -1) {
@@ -276,7 +276,7 @@ int send_sfc_list(sfc_t* node, int total_sfc)
     }
     syslog(LOG_NOTICE,"Socket next created.");
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr(new_sfc_list[0].ip);
+    server.sin_addr.s_addr = new_sfc_list[0].ip;
     server.sin_port = htons(port);
 
     if (connect(sock,(struct sockaddr*)&server,sizeof(server)) < 0) {
