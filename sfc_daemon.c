@@ -26,7 +26,7 @@ enum {
 
 typedef struct sfc {
     uint8_t vf;
-    char ip[15];
+    uint32_t ip;
     unsigned char mac[6];
     uint32_t sa_ip;
     unsigned char sa_mac[6];
@@ -36,7 +36,7 @@ typedef struct sfc {
 
 typedef struct buffer {
     uint8_t vf;
-    char ip[15];
+    uint32_t ip;
     unsigned char mac[6];
     uint32_t sa_ip;
     unsigned char sa_mac[6];
@@ -54,7 +54,7 @@ int main(int argc , char *argv[])
     int sock, client_sock, read_size, sfc_bool = 1,sfc_count, total_sfc;
     struct sockaddr_in server;
     sfc_t *sfc_head, *cur, *prev;
-    buffer_t buf[64] = {{0,"0","0",0,"0",0}};
+    buffer_t buf[64] = {{0,0,"0",0,"0",0}};
     socklen_t client_size;
     struct sockaddr_in client;
     
@@ -112,7 +112,7 @@ int main(int argc , char *argv[])
         /*for sfc head*/
         sfc_head = (struct sfc*)malloc(sizeof(sfc_t));
         sfc_head->vf = buf[0].vf;
-        strcpy(sfc_head->ip,buf[0].ip);
+        sfc_head->ip = buf[0].ip;
         memcpy(sfc_head->mac,buf[0].mac,6);
         sfc_head->sa_ip = buf[0].sa_ip;
         memcpy(sfc_head->sa_mac,buf[0].sa_mac,6);
@@ -123,11 +123,11 @@ int main(int argc , char *argv[])
     
         for(int i=1; buf[i].vf!=0; i++,prev=prev->next) {
             cur = (struct sfc*)malloc(sizeof(sfc_t));
-            strcpy(cur->ip,buf[i].ip);
+            cur->ip = buf[i].ip;
             cur->vf = buf[i].vf;
 	       memcpy(cur->mac,buf[i].mac,6);
 	       cur->sa_ip = buf[i].sa_ip;
-           memcpy(cur->sa_mac,buf[i].sa_mac,6);
+            memcpy(cur->sa_mac,buf[i].sa_mac,6);
 	       cur->next = NULL;
             //printf("buf ip = %s buf vf = %d\n", buf[i].ip,buf[i].vf);
             prev->next = cur;
@@ -256,16 +256,16 @@ int send_sfc_list(sfc_t* node, int total_sfc)
 {
     int sock;
     struct sockaddr_in server;
-    buffer_t new_sfc_list[64]  = {{0,"0","0",0,"0",0}};
+    buffer_t new_sfc_list[64]  = {{0,0,"0",0,"0",0}};
     sfc_t *cur;
     int i=0, sfc_bool;
 
     for(cur=node; cur; cur=cur->next) {
         new_sfc_list[i].vf = cur->vf;
-	   strcpy(new_sfc_list[i].ip,cur->ip);
+	   new_sfc_list[i].ip = cur->ip;
 	   memcpy(new_sfc_list[i].mac,cur->mac,sizeof(new_sfc_list[i].mac));
 	   new_sfc_list[i].sa_ip = cur->sa_ip;
-       memcpy(new_sfc_list[i].sa_mac,cur->sa_mac,sizeof(new_sfc_list[i].sa_mac));
+        memcpy(new_sfc_list[i].sa_mac,cur->sa_mac,sizeof(new_sfc_list[i].sa_mac));
         new_sfc_list[i].total_sfc = total_sfc;
 	   syslog(LOG_NOTICE,"next vf = %d next ip = %s",new_sfc_list[i].vf, new_sfc_list[i].ip);
 	   i++;
