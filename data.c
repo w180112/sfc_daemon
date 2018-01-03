@@ -10,23 +10,29 @@ int main()
 {
     int sock, client_sock, read_size;
     struct sockaddr_in server,client;
-    char buf[256], new_buf[256];;
+    char buf[256], new_buf[256];
     int length = sizeof(client);
+    struct ifreq ifr;
 
     sock = socket(AF_INET,SOCK_DGRAM,0);
     if (sock == -1) {
         puts("Could not create socket.");
-    return -1;
+        return -1;
     }
+    ifr.ifr_addr.sa_family = AF_INET;
+    strncpy(ifr.ifr_name, "ens8", IFNAMSIZ-1);
+    ioctl(fd, SIOCGIFADDR, &ifr);
+
     puts("Socket created.");
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr("172.16.10.202");
+    //server.sin_addr.s_addr = inet_addr("172.16.10.202");
+    server.sin_addr.s_addr = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
     server.sin_port = htons(20000);
 
     if (bind(sock,(struct sockaddr *)&server,sizeof(server)) < 0) {
         //Display the error message
         puts("Error! Bind failed.");
-    return -1;
+        return -1;
     }
     puts("Bind done.");
 
@@ -34,6 +40,7 @@ int main()
 
         //listen(sock,3);
         puts("Waiting for incoming connections...");
+        memset(buf,0,sizeof(buf));
     
         //Accept connection from an incoming client
             /*client_sock = accept(sock,(struct sockaddr *)&client,&client_size);
@@ -59,11 +66,11 @@ int main()
             
             char *loc = strstr(buf, "is ");
             if (loc) {
-                memset(new_buf, 0, strlen(new_buf));
+                memset(new_buf, 0, 256);
                 strncpy(new_buf,buf,(loc-buf));
                 char tmp[256];
                 //strncpy(tmp,);
-                strncpy(tmp,(buf + (strlen("is ") + (loc - buf))),strlen(buf + strlen("is") + (loc - buf)));
+                strncpy(tmp,(buf + (strlen("is ") + (loc - buf))),strlen(buf) - (strlen("is ") + (loc - buf)));
                 strncat(new_buf,tmp,strlen(tmp));
                 printf("new_buf %s\n", new_buf);
             }
